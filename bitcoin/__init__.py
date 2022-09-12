@@ -32,7 +32,7 @@ class MainParams(bitcoin.core.CoreMainParams):
     BECH32_HRP = 'ep'
 
 class TestNetParams(bitcoin.core.CoreTestNetParams):
-    MESSAGE_START = b'\x0b\x11\x09\x07'
+    MESSAGE_START = b'\xdb\xb1\xc9\xa7'
     DEFAULT_PORT = 18333
     RPC_PORT = 18332
     DNS_SEEDS = (('seed01.electraprotocol.eu', 'seed02.electraprotocol.eu'),
@@ -45,7 +45,7 @@ class TestNetParams(bitcoin.core.CoreTestNetParams):
     BECH32_HRP = 'te'
 
 class RegTestParams(bitcoin.core.CoreRegTestParams):
-    MESSAGE_START = b'\xfa\xbf\xb5\xda'
+    MESSAGE_START = b'\xfa\xbf\xc5\xda'
     DEFAULT_PORT = 18444
     RPC_PORT = 18443
     DNS_SEEDS = ()

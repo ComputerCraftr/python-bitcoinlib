@@ -576,7 +576,7 @@ class NoWitnessData(Exception):
 
 class CBlock(CBlockHeader):
     """A block including all transactions in it"""
-    __slots__ = ['vtx', 'vMerkleTree', 'vWitnessMerkleTree']
+    __slots__ = ['vtx', 'vMerkleTree', 'vWitnessMerkleTree', 'vBlockSig']
 
     @staticmethod
     def build_merkle_tree_from_txids(txids):
@@ -664,7 +664,7 @@ class CBlock(CBlockHeader):
             raise ValueError('The witness commitment is missed')
         return commit_pos
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, vtx=()):
+    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, vtx=(), vBlockSig=()):
         """Create a new block"""
         if vtx:
             vMerkleTree = tuple(CBlock.build_merkle_tree_from_txs(vtx))
@@ -683,6 +683,7 @@ class CBlock(CBlockHeader):
             vWitnessMerkleTree = ()
         object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
         object.__setattr__(self, 'vtx', tuple(CTransaction.from_tx(tx) for tx in vtx))
+        object.__setattr__(self, 'vtx', tuple(vBlockSig))
 
     @classmethod
     def stream_deserialize(cls, f):
@@ -695,14 +696,16 @@ class CBlock(CBlockHeader):
             vWitnessMerkleTree = tuple(CBlock.build_witness_merkle_tree_from_txs(vtx))
         except NoWitnessData:
             vWitnessMerkleTree = ()
+        vBlockSig = BytesSerializer.stream_serialize(cls, f)
         object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
         object.__setattr__(self, 'vtx', tuple(vtx))
+        object.__setattr__(self, 'vBlockSig', tuple(vBlockSig))
 
         return self
 
     def stream_serialize(self, f, include_witness=True):
         super(CBlock, self).stream_serialize(f)
-        VectorSerializer.stream_serialize(CTransaction, self.vtx, f, dict(include_witness=include_witness))
+        VectorSerializer.stream_serialize(CTransaction, {self.vtx, self.vBlockSig}, f, dict(include_witness=include_witness))
 
     def get_header(self):
         """Return the block header

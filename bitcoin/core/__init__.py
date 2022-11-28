@@ -696,7 +696,10 @@ class CBlock(CBlockHeader):
             vWitnessMerkleTree = tuple(CBlock.build_witness_merkle_tree_from_txs(vtx))
         except NoWitnessData:
             vWitnessMerkleTree = ()
-        vBlockSig = BytesSerializer.stream_serialize(cls, f)
+        try:
+            vBlockSig = BytesSerializer.stream_serialize(cls, f)
+        except:
+            vBlockSig = ()
         object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
         object.__setattr__(self, 'vtx', tuple(vtx))
         object.__setattr__(self, 'vBlockSig', tuple(vBlockSig))

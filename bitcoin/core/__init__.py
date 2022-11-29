@@ -697,7 +697,7 @@ class CBlock(CBlockHeader):
         except NoWitnessData:
             vWitnessMerkleTree = ()
         try:
-            vBlockSig = BytesSerializer.stream_serialize(cls, f)
+            vBlockSig = BytesSerializer.stream_deserialize(f)
         except:
             vBlockSig = ()
         object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)

@@ -712,11 +712,9 @@ class CBlock(CBlockHeader):
 
     def stream_serialize(self, f, include_witness=True):
         super(CBlock, self).stream_serialize(f)
+        VectorSerializer.stream_serialize(CTransaction, self.vtx, f, dict(include_witness=include_witness))
         if len(self.vtx) >= 2 and self.vtx[1].is_coinstake():
-            VectorSerializer.stream_serialize(CTransaction, {self.vtx, self.vBlockSig}, f,
-                                              dict(include_witness=include_witness))
-        else:
-            VectorSerializer.stream_serialize(CTransaction, self.vtx, f, dict(include_witness=include_witness))
+            BytesSerializer.stream_serialize(self.vBlockSig, f)
 
     def get_header(self):
         """Return the block header

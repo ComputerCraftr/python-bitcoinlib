@@ -698,7 +698,7 @@ class CBlock(CBlockHeader):
             vWitnessMerkleTree = ()
         try:
             vBlockSig = BytesSerializer.stream_deserialize(f)
-        except:
+        except SerializationTruncationError:
             vBlockSig = ()
         object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
         object.__setattr__(self, 'vtx', tuple(vtx))

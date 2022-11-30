@@ -454,6 +454,10 @@ class CTransaction(ImmutableSerializable):
     def is_coinbase(self):
         return len(self.vin) == 1 and self.vin[0].prevout.is_null()
 
+    def is_coinstake(self):
+        return self.vin and not self.vin[0].prevout.is_null() and len(self.vout) >= 2 and self.vout[0].nValue == 0 and \
+               not self.vout[0].scriptPubKey
+
     def has_witness(self):
         """True if witness"""
         return not self.wit.is_null()
@@ -696,9 +700,9 @@ class CBlock(CBlockHeader):
             vWitnessMerkleTree = tuple(CBlock.build_witness_merkle_tree_from_txs(vtx))
         except NoWitnessData:
             vWitnessMerkleTree = ()
-        try:
+        if len(vtx) >= 2 and vtx[1].is_coinstake():
             vBlockSig = BytesSerializer.stream_deserialize(f)
-        except SerializationTruncationError:
+        else:
             vBlockSig = ()
         object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
         object.__setattr__(self, 'vtx', tuple(vtx))
@@ -708,7 +712,11 @@ class CBlock(CBlockHeader):
 
     def stream_serialize(self, f, include_witness=True):
         super(CBlock, self).stream_serialize(f)
-        VectorSerializer.stream_serialize(CTransaction, {self.vtx, self.vBlockSig}, f, dict(include_witness=include_witness))
+        if len(self.vtx) >= 2 and self.vtx[1].is_coinstake():
+            VectorSerializer.stream_serialize(CTransaction, {self.vtx, self.vBlockSig}, f,
+                                              dict(include_witness=include_witness))
+        else:
+            VectorSerializer.stream_serialize(CTransaction, self.vtx, f, dict(include_witness=include_witness))
 
     def get_header(self):
         """Return the block header
